@@ -1,21 +1,76 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import from 
+import React from "react";
+import { StyleSheet, Text, TextInput, Pressable, View, KeyboardAvoidingView, Platform, ScrollView, } from "react-native";
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import  { HomeScreen } from "./src/Screens/HomeScreen";       
+import  { DetailsScreen }  from "./src/Screens/DetailsScreen";
 
-export default function App() {
+
+
+const Stack = createNativeStackNavigator();
+
+ export default function App() {
+  const linking = {
+    prefixes: ["myapp://"],
+    config: {
+      screens: {
+        Home: "home",
+        Details: "details/:id",
+      },
+    },
+  };
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+
+    <NavigationContainer linking={linking}>
+      <Stack.Navigator>
+
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="Details"
+          component={DetailsScreen}
+        />
+
+      </Stack.Navigator>
+    </NavigationContainer>
+
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 20,
+    gap: 20,
+  },
+
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+  },
+
+  button: {
+    backgroundColor: "#111",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+
+  buttonText: {
+    color: "white",
+    fontWeight: "600",
+  },
+
+  error: {
+    color: "red",
+  },
+
+  success: {
+    color: "green",
+    fontWeight: "600",
   },
 });

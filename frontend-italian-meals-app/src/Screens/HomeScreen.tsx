@@ -1,69 +1,87 @@
-import { View, Text, Pressable, FlatList ,StyleSheet, Linking} from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { ITEMS} from "../list/items";
-import { useRoute } from "@react-navigation/native";
+import { useEffect, useState } from "react";
+import { FlatList, Pressable, StyleSheet, Text, View, Image } from "react-native";
+import { fetchItalianMeals } from "../services/mealsApi";
 
-interface Item{
-    id: string;
-    name: string;
+export function HomeScreen({ navigation }: any) {
+  const [meals, setMeals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-}
+  async function loadMeals() {
+    try {
+      setLoading(true);
+      const data = await fetchItalianMeals();
+      setMeals(data);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-function Row ({item}: {item: Item}){
-  const navigation= useNavigation<any>();
-  return( 
-    <Pressable style={styles.row} 
-    onPress={()=> navigation.navigate("Details", { id: item.id })}>
-      <Text>{item.name}</Text>
-    </Pressable>
-  )
+  useEffect(() => {
+    loadMeals();
+  }, []);
 
-
-}
-
-export default function HomeScreen({ navigation }: any) {
-    const route = useRoute();
+  if (loading) {
     return (
-    
-    <View
-      style={{
-        flex: 1,
-        padding: 20
-      }}
-    >
-      <Text>Home Screen</Text>
+      <View style={styles.container}>
+        <Text>Caricamento...</Text>
+      </View>
+    );
+  }
 
-      <Text style={{ marginVertical: 20 }}>
-        Deep Link Path: {route.path || 'Nessun deep link'}
-      </Text>
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text>{error}</Text>
+      </View>
+    );
+  }
 
+  return (
+    <View style={styles.container}>
       <FlatList
-        data={ITEMS}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (<Row item={item}/>)}
-        style={{
-        flex: 1,
-        padding: 16
-      }}
-        />
+        data={meals}
+        keyExtractor={(item: any) => item.idMeal}
+        renderItem={({ item }: any) => (
+          <Pressable
+            style={styles.listItem}
+            onPress={() =>
+              navigation.navigate("Details", { idMeal: item.idMeal })
+            }
+          ><Image source={{ uri: item.strMealThumb }} style={styles.image} />
+            <Text>{item.strMeal}</Text>
+          </Pressable>
+        )}
+      />
     </View>
   );
+}
 
- 
-} 
 const styles = StyleSheet.create({
-    row: {
-      padding: 12,
-      borderWidth: 1,
-      borderColor: "#00a9cf",
-      borderRadius: 8,
-      marginBottom: 8,
-    },
-    list: { paddingBottom: 16 },
-    button:{
-        padding: 16,
-              marginBottom: 10,
-              borderWidth: 1,
-              borderRadius: 8,
-    }
-  });
+  container: { flex: 1, padding: 16, gap: 12 },
+  image: {
+    width: "100%",
+    height: 140,
+    borderRadius: 10,
+    marginBottom: 8,
+    resizeMode: "cover",
+  },
+  listItem: {
+    padding: 16,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  title: { fontSize: 22, fontWeight: "700" },
+  button: {
+    alignSelf: "flex-start",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderRadius: 8,
+    backgroundColor: "#f0f0f0",
+  },
+  buttonText: { fontWeight: "600" },
+});
