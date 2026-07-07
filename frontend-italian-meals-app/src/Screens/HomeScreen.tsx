@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 import {
   FlatList,
   Pressable,
-  StyleSheet,
   Text,
   View,
   Image,
+  useWindowDimensions,
 } from "react-native";
 import { fetchItalianMeals } from "../services/mealsApi";
 import { FavoriteButton } from "../components/FavoriteButton";
 import { useFavorites } from "../context/FavoritesContext";
+import { createSharedStyles } from "../theme/styles";
 
 export function HomeScreen({ navigation }: any) {
   const [meals, setMeals] = useState<any[]>([]);
@@ -18,6 +19,9 @@ export function HomeScreen({ navigation }: any) {
   const [error, setError] = useState("");
   const [showFavorites, setShowFavorites] = useState(false);
   const { favoriteIds, isFavorite, toggleFavorite } = useFavorites();
+  const { width } = useWindowDimensions();
+  const isWide = width >= 600;
+  const styles = createSharedStyles();
 
   async function loadMeals() {
     try {
@@ -41,22 +45,22 @@ export function HomeScreen({ navigation }: any) {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <Text>Caricamento...</Text>
+      <View style={styles.screen}>
+        <Text style={styles.loadingText}>Caricamento...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.container}>
-        <Text>{error}</Text>
+      <View style={styles.screen}>
+        <Text style={styles.emptyText}>{error}</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.screen}>
       <Text style={styles.title}>
         {showFavorites ? "I tuoi preferiti" : "Piatti italiani"}
       </Text>
@@ -80,10 +84,14 @@ export function HomeScreen({ navigation }: any) {
       </View>
 
       <FlatList
+        key={isWide ? "wide" : "narrow"}
         data={displayedMeals}
+        numColumns={isWide ? 2 : 1}
+        columnWrapperStyle={isWide ? styles.flatListContent : undefined}
+        contentContainerStyle={styles.flatListContent}
         keyExtractor={(item: any) => item.idMeal}
         renderItem={({ item }: any) => (
-          <View style={styles.listItem}>
+          <View style={isWide ? styles.listItemWide : styles.listItem}>
             <Pressable
               style={styles.mealInfo}
               onPress={() =>
@@ -97,7 +105,9 @@ export function HomeScreen({ navigation }: any) {
                 style={styles.image}
               />
 
-              <Text style={styles.mealName}>{item.strMeal}</Text>
+              <Text style={styles.mealName} numberOfLines={2}>
+                {item.strMeal}
+              </Text>
             </Pressable>
 
             <FavoriteButton
@@ -110,63 +120,3 @@ export function HomeScreen({ navigation }: any) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "white",
-  },
-
-  title: {
-    fontSize: 30,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-
-  buttonsRow: {
-    flexDirection: "row",
-    marginBottom: 20,
-    gap: 10,
-  },
-
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: "white",
-  },
-
-  buttonText: {
-    fontWeight: "600",
-  },
-
-  listItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderColor: "#ddd",
-    paddingVertical: 10,
-  },
-
-  mealInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-
-  image: {
-    width: 55,
-    height: 55,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-
-  mealName: {
-    fontSize: 16,
-    flex: 1,
-  },
-
-});
