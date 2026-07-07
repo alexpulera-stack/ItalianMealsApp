@@ -9,29 +9,75 @@ import { createSharedStyles } from "../theme/styles";
 
 export function DetailsScreen({ navigation, route }: any) {
   const id = route.params?.idMeal;
-  const [ingredients, setIngredients] = React.useState<any>(null);
+  const [meal, setMeal] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
   const { isFavorite, toggleFavorite } = useFavorites();
   const { theme } = useTheme();
   const styles = createSharedStyles(theme);
 
-  if (!id) return <Text style={styles.emptyText}>Invalid route param</Text>;
+  async function loadMeal() {
+    if (!id) {
+      setError("Parametro di navigazione non valido");
+      setLoading(false);
+      return;
+    }
 
-  async function loadMeals() {
-    const data = await fetchMealById(id);
-    setIngredients(data);
+    try {
+      setLoading(true);
+      setError("");
+      const data = await fetchMealById(id);
+      if (!data) {
+        setError("Piatto non trovato");
+        setMeal(null);
+      } else {
+        setMeal(data);
+      }
+    } catch (e: any) {
+      setError(e.message || "Errore di rete");
+    } finally {
+      setLoading(false);
+    }
   }
 
   React.useEffect(() => {
-    loadMeals();
+    void loadMeal();
   }, [id]);
+
+  if (!id) {
+    return (
+      <View style={styles.screen}>
+        <Text style={styles.emptyText}>Parametro di navigazione non valido</Text>
+      </View>
+    );
+  }
+
+  if (loading) {
+    return (
+      <View style={styles.screen}>
+        <Text style={styles.loadingText}>Caricamento dettaglio...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.screen}>
+        <Text style={styles.emptyText}>{error}</Text>
+        <Pressable style={styles.button} onPress={() => void loadMeal()} accessibilityRole="button" accessibilityLabel="Riprova il dettaglio">
+          <Text style={styles.buttonText}>Riprova</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.screen}>
-      <Image source={{ uri: ingredients?.strMealThumb }} style={detailStyles.image} />
+      <Image source={{ uri: meal?.strMealThumb }} style={detailStyles.image} />
       <Text style={styles.title} accessibilityRole="header" maxFontSizeMultiplier={1.4}>
-        {ingredients?.strMeal}
+        {meal?.strMeal}
       </Text>
-      <Text style={styles.emptyText}>{ingredients?.strInstructions}</Text>
+      <Text style={styles.emptyText}>{meal?.strInstructions}</Text>
 
       <View style={styles.rowCenter}>
         <Pressable
@@ -42,15 +88,11 @@ export function DetailsScreen({ navigation, route }: any) {
         >
           <Text style={styles.buttonText}>Torna indietro</Text>
         </Pressable>
-        <FavoriteButton
-          isFavorite={isFavorite(id)}
-          onToggle={() => toggleFavorite(id)}
-        />
+        <FavoriteButton isFavorite={isFavorite(id)} onToggle={() => toggleFavorite(id)} />
       </View>
     </View>
   );
 }
-
 
 const detailStyles = {
   image: {
