@@ -1,24 +1,34 @@
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const FAVORITES_KEY = "app:v1:favs";
 
+// Carica i preferiti
 export async function loadFavoriteIds(): Promise<string[]> {
   try {
-    const raw = await AsyncStorage.getItem(FAVORITES_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed)
-      ? parsed.filter((id): id is string => typeof id === "string")
-      : [];
-  } catch {
+    const data = await AsyncStorage.getItem(FAVORITES_KEY);
+
+    if (!data) {
+      return [];
+    }
+
+    const parsed = JSON.parse(data);
+
+    if (Array.isArray(parsed)) {
+      return parsed.filter((item): item is string => typeof item === "string");
+    }
+
+    return [];
+  } catch (error) {
     return [];
   }
 }
 
-export async function saveFavoriteIds(ids: string[]): Promise<void> {
+// Salva i preferiti
+export async function saveFavoriteIds(ids: string[]) {
   try {
     await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(ids));
-  } catch {
-   
+  } catch (error) {
+    console.log("Errore salvataggio", error);
   }
 }

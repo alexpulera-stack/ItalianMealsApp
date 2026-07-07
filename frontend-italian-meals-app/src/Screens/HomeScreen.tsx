@@ -9,13 +9,14 @@ import {
   Image,
 } from "react-native";
 import { fetchItalianMeals } from "../services/mealsApi";
+import { loadFavoriteIds, saveFavoriteIds } from "../services/storage";
+import { FavoriteButton } from "../components/FavoriteButton";
 
 export function HomeScreen({ navigation }: any) {
   const [meals, setMeals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Preferiti
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
 
@@ -31,16 +32,26 @@ export function HomeScreen({ navigation }: any) {
     }
   }
 
+  async function loadFavorites() {
+    const storedFavorites = await loadFavoriteIds();
+    setFavorites(storedFavorites);
+  }
+
   useEffect(() => {
     loadMeals();
+    loadFavorites();
   }, []);
 
   function toggleFavorite(id: string) {
-    if (favorites.includes(id)) {
-      setFavorites(favorites.filter((fav) => fav !== id));
-    } else {
-      setFavorites([...favorites, id]);
-    }
+    setFavorites((currentFavorites) => {
+      const isFavorite = currentFavorites.includes(id);
+      const nextFavorites = isFavorite
+        ? currentFavorites.filter((fav) => fav !== id)
+        : [...currentFavorites, id];
+
+      void saveFavoriteIds(nextFavorites);
+      return nextFavorites;
+    });
   }
 
   const displayedMeals = showFavorites
@@ -108,14 +119,10 @@ export function HomeScreen({ navigation }: any) {
               <Text style={styles.mealName}>{item.strMeal}</Text>
             </Pressable>
 
-            <Pressable
-              style={styles.heartButton}
-              onPress={() => toggleFavorite(item.idMeal)}
-            >
-              <Text style={{ fontSize: 22 }}>
-                {favorites.includes(item.idMeal) ? "❤️" : "🤍"}
-              </Text>
-            </Pressable>
+            <FavoriteButton
+              isFavorite={favorites.includes(item.idMeal)}
+              onToggle={() => toggleFavorite(item.idMeal)}
+            />
           </View>
         )}
       />
@@ -181,11 +188,4 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  heartButton: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 8,
-    width: 42,
-    alignItems: "center",
-  },
 });
