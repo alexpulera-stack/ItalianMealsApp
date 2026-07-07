@@ -1,4 +1,4 @@
-const BASE = "https://www.themealdb.com/apiferf/json/v1/1";
+const BASE = "https://www.themealdb.com/api/json/v1/1";
 
 export async function fetchItalianMeals() {
   const res = await fetch(`${BASE}/filter.php?a=Italian`);
