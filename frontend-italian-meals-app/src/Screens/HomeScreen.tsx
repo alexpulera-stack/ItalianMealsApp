@@ -11,6 +11,7 @@ import {
 import { fetchItalianMeals } from "../services/mealsApi";
 import { FavoriteButton } from "../components/FavoriteButton";
 import { useFavorites } from "../context/FavoritesContext";
+import { useTheme } from "../context/ThemeContext";
 import { createSharedStyles } from "../theme/styles";
 
 export function HomeScreen({ navigation }: any) {
@@ -19,9 +20,10 @@ export function HomeScreen({ navigation }: any) {
   const [error, setError] = useState("");
   const [showFavorites, setShowFavorites] = useState(false);
   const { favoriteIds, isFavorite, toggleFavorite } = useFavorites();
+  const { theme } = useTheme();
   const { width } = useWindowDimensions();
   const isWide = width >= 600;
-  const styles = createSharedStyles();
+  const styles = createSharedStyles(theme);
 
   async function loadMeals() {
     try {
@@ -99,6 +101,9 @@ export function HomeScreen({ navigation }: any) {
                   idMeal: item.idMeal,
                 })
               }
+              accessibilityRole="button"
+              accessibilityLabel={`Apri ${item.strMeal}`}
+              android_ripple={{ color: theme.colors.primary }}
             >
               <Image
                 source={{ uri: item.strMealThumb }}

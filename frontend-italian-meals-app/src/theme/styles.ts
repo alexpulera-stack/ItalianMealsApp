@@ -1,7 +1,9 @@
 import { StyleSheet } from "react-native";
-import { colors, spacing } from "./colors";
+import { spacing } from "./colors";
 
-export function createSharedStyles() {
+export function createSharedStyles(theme: { colors: Record<string, string> }) {
+  const colors = theme.colors;
+
   return StyleSheet.create({
     screen: {
       flex: 1,
@@ -29,7 +31,7 @@ export function createSharedStyles() {
       paddingHorizontal: spacing.lg,
       borderWidth: 1,
       borderRadius: 8,
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       borderColor: colors.border,
     },
     buttonText: {
@@ -85,6 +87,10 @@ export function createSharedStyles() {
     loadingText: {
       fontSize: 16,
       color: colors.muted,
+    },
+    pressedFeedback: {
+      opacity: 0.7,
+      transform: [{ scale: 0.98 }],
     },
   });
 }

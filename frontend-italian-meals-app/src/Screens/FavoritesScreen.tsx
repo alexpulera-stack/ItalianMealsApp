@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Image, Pressable, Text, View } from "react-native";
 import { fetchItalianMeals } from "../services/mealsApi";
 import { useFavorites } from "../context/FavoritesContext";
+import { useTheme } from "../context/ThemeContext";
 import { FavoriteButton } from "../components/FavoriteButton";
+import { createSharedStyles } from "../theme/styles";
 
 export function FavoritesScreen({ navigation }: any) {
   const { favoriteIds, isFavorite, toggleFavorite } = useFavorites();
+  const { theme } = useTheme();
   const [meals, setMeals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const styles = createSharedStyles(theme);
 
   useEffect(() => {
     async function loadFavoritesMeals() {
@@ -26,15 +30,15 @@ export function FavoritesScreen({ navigation }: any) {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <Text>Caricamento preferiti...</Text>
+      <View style={styles.screen}>
+        <Text style={styles.loadingText}>Caricamento preferiti...</Text>
       </View>
     );
   }
 
   if (!favoriteIds.length) {
     return (
-      <View style={styles.container}>
+      <View style={styles.screen}>
         <Text style={styles.emptyText}>
           Nessun preferito ancora. Tocca ♡ su un piatto dalla lista.
         </Text>
@@ -43,8 +47,10 @@ export function FavoritesScreen({ navigation }: any) {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>I tuoi preferiti</Text>
+    <View style={styles.screen}>
+      <Text style={styles.title} accessibilityRole="header" maxFontSizeMultiplier={1.4}>
+        I tuoi preferiti
+      </Text>
       <FlatList
         data={meals}
         keyExtractor={(item) => item.idMeal}
@@ -53,6 +59,8 @@ export function FavoritesScreen({ navigation }: any) {
             <Pressable
               style={styles.mealInfo}
               onPress={() => navigation.navigate("Details", { idMeal: item.idMeal })}
+              accessibilityRole="button"
+              accessibilityLabel={`Apri ${item.strMeal}`}
             >
               <Image source={{ uri: item.strMealThumb }} style={styles.image} />
               <Text style={styles.mealName}>{item.strMeal}</Text>
@@ -69,43 +77,11 @@ export function FavoritesScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "white",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 16,
-  },
-  emptyText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: "#444",
-  },
-  listItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderColor: "#ddd",
-    paddingVertical: 10,
-  },
-  mealInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
+const styles = {
   image: {
     width: 55,
     height: 55,
     borderRadius: 8,
     marginRight: 12,
   },
-  mealName: {
-    fontSize: 16,
-    flex: 1,
-  },
-});
+};
