@@ -3,12 +3,12 @@ import { Pressable, StyleSheet, Text, View, Image } from "react-native";
 import { fetchMealById } from "../services/mealsApi";
 import React from "react";
 import { FavoriteButton } from "../components/FavoriteButton";
-import { loadFavoriteIds, saveFavoriteIds } from "../services/storage";
+import { useFavorites } from "../context/FavoritesContext";
 
 export function DetailsScreen({ navigation, route }: any) {
   const id = route.params?.idMeal;
   const [ingredients, setIngredients] = React.useState<any>(null);
-  const [favorites, setFavorites] = React.useState<string[]>([]);
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   if (!id) return <Text style={{ padding: 16 }}>Invalid route param</Text>;
 
@@ -17,27 +17,9 @@ export function DetailsScreen({ navigation, route }: any) {
     setIngredients(data);
   }
 
-  async function loadFavorites() {
-    const storedFavorites = await loadFavoriteIds();
-    setFavorites(storedFavorites);
-  }
-
   React.useEffect(() => {
     loadMeals();
-    loadFavorites();
   }, [id]);
-
-  function toggleFavorite() {
-    setFavorites((currentFavorites) => {
-      const isFavorite = currentFavorites.includes(id);
-      const nextFavorites = isFavorite
-        ? currentFavorites.filter((fav) => fav !== id)
-        : [...currentFavorites, id];
-
-      void saveFavoriteIds(nextFavorites);
-      return nextFavorites;
-    });
-  }
 
   return (
     <View style={styles.container}>
@@ -50,8 +32,8 @@ export function DetailsScreen({ navigation, route }: any) {
           <Text style={styles.buttonText}>Go back</Text>
         </Pressable>
         <FavoriteButton
-          isFavorite={favorites.includes(id)}
-          onToggle={toggleFavorite}
+          isFavorite={isFavorite(id)}
+          onToggle={() => toggleFavorite(id)}
         />
       </View>
     </View>
