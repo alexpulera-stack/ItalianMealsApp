@@ -32,13 +32,13 @@ Esegui i seguenti passaggi:
 
 1. Clona il repository:
 ```bash
-git clone <https://github.com/alexpulera-stack/ItalianMealsApp/tree/main/frontend-italian-meals-app>
+git clone https://github.com/alexpulera-stack/ItalianMealsApp/tree/main/frontend-italian-meals-app.git
 ```
 
 2. Entra nella cartella del progetto:
 ```bash
-cd <ItalianMealsApp>
-cd <frontend-italian-meals-app>
+cd ItalianMealsApp
+cd frontend-italian-meals-app
 ```
 
 3. Installa le dipendenze:
